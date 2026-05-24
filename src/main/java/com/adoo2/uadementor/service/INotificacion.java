@@ -1,0 +1,13 @@
+package com.adoo2.uadementor.service;
+
+import com.adoo2.uadementor.model.Alumno;
+import com.adoo2.uadementor.model.Usuario;
+import com.adoo2.uadementor.model.Tutor;
+
+public interface INotificacion {
+    void enviarNotificacion(Usuario usuario);
+    void enviarNotificacion(Alumno alumno);
+    void enviarCalificacion(Alumno alumno, Tutor tutor);
+}
+
+
