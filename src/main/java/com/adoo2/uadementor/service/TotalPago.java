@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 public class TotalPago implements IEstado {
     @Override
     public void pagar(Factura factura) {
-        System.out.println("La factura ya estÃƒÂ¡ pagada: " + factura.getId());
+        System.out.println("La factura ya esta pagada: " + factura.getId());
     }
 }
 

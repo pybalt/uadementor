@@ -9,17 +9,17 @@ import org.springframework.stereotype.Service;
 public class Notificaciones_push implements INotificacion {
     @Override
     public void enviarNotificacion(Usuario usuario) {
-        System.out.println("Enviando notificaciÃƒÂ³n push a: " + usuario.getEmail());
+        System.out.println("Enviando notificacion push a: " + usuario.getEmail());
     }
 
     @Override
     public void enviarNotificacion(Alumno alumno) {
-        System.out.println("Enviando notificaciÃƒÂ³n push a: " + alumno.getEmail());
+        System.out.println("Enviando notificacion push a: " + alumno.getEmail());
     }
 
     @Override
     public void enviarCalificacion(Alumno alumno, Tutor tutor) {
-        System.out.println("Enviando calificaciÃƒÂ³n por notificaciÃƒÂ³n push a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
+        System.out.println("Enviando calificacion por notificacion push a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
     }
 }
 

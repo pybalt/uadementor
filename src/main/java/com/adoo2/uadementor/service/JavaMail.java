@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 public class JavaMail implements IAdapterMail {
     @Override
     public void enviarNotificacion(Usuario usuario) {
-        System.out.println("Enviando notificaciÃƒÂ³n con JavaMail a: " + usuario.getEmail());
+        System.out.println("Enviando notificacion con JavaMail a: " + usuario.getEmail());
     }
 
     @Override
     public void enviarCalificacion(Alumno alumno, Tutor tutor) {
-        System.out.println("Enviando calificaciÃƒÂ³n con JavaMail a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
+        System.out.println("Enviando calificacion con JavaMail a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
     }
 }
 

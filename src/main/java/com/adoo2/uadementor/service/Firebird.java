@@ -8,12 +8,12 @@ import org.springframework.stereotype.Service;
 public class Firebird implements IAdapterPush {
     @Override
     public void enviarNotificacion(Alumno alumno) {
-        System.out.println("Enviando notificaciÃƒÂ³n con Firebird a: " + alumno.getEmail());
+        System.out.println("Enviando notificacion con Firebird a: " + alumno.getEmail());
     }
 
     @Override
     public void enviarCalificacion(Alumno alumno, Tutor tutor) {
-        System.out.println("Enviando calificaciÃƒÂ³n con Firebird a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
+        System.out.println("Enviando calificacion con Firebird a: " + alumno.getEmail() + " sobre el tutor: " + tutor.getEmail());
     }
 }
 

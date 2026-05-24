@@ -10,22 +10,22 @@ public class Concretado implements IEstadoSesion {
 
     @Override
     public void aceptar(Tutor tutor, Alumno alumno, SesionMentoria sesionMentoria) {
-        System.out.println("la sesiÃƒÂ³n ya concretÃƒÂ³");
+        System.out.println("la sesion ya concreto");
     }
 
     @Override
     public void cancelar(Tutor tutor, Alumno alumno, SesionMentoria sesionMentoria) {
-        System.out.println("la sesiÃƒÂ³n ya concretÃƒÂ³");
+        System.out.println("la sesion ya concreto");
     }
 
     @Override
     public void concretar(Tutor tutor, Alumno alumno, SesionMentoria sesionMentoria) {
-        System.out.println("la sesiÃƒÂ³n ya concretÃƒÂ³");
+        System.out.println("la sesion ya concreto");
     }
 
     @Override
     public void reservar(Tutor tutor, Alumno alumno, SesionMentoria sesionMentoria) {
-        System.out.println("la sesiÃƒÂ³n ya concretÃƒÂ³");
+        System.out.println("la sesion ya concreto");
     }
 }
 
