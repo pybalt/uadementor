@@ -17,11 +17,11 @@ export default function Tutors(){
   return (
     <div>
       <h2>Buscar Tutores</h2>
-      <form onSubmit={onSearch} style={{marginBottom:12}}>
+      <form onSubmit={onSearch} className="search-form">
         <input placeholder="Nombre o materia" value={q} onChange={e=>setQ(e.target.value)} />
-        <button style={{marginLeft:8}}>Buscar</button>
+        <button className="btn btn-primary" style={{marginLeft:8}}>Buscar</button>
       </form>
-      <div style={{display:'grid',gap:12}}>
+      <div className="grid">
         {list.map(t=> <TutorCard key={t.id} tutor={t} />)}
       </div>
     </div>
