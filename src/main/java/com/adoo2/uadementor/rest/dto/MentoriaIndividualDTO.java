@@ -9,11 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SesionIndividualDTO {
+public class MentoriaIndividualDTO {
     private String descripcion;
     private double precio;
     private int duracion;
     private String zona;
 }
-
-
