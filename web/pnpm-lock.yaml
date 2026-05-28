@@ -3,11 +3,13 @@ lockfileVersion: 5.4
 specifiers:
   react: ^18.2.0
   react-dom: ^18.2.0
+  react-router-dom: ^6.12.1
   vite: ^5.1.0
 
 dependencies:
   react: 18.3.1
   react-dom: 18.3.1_react@18.3.1
+  react-router-dom: 6.30.3_nnrd3gsncyragczmpvfhocinkq
 
 devDependencies:
   vite: 5.4.21
@@ -220,6 +222,11 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@remix-run/router/1.23.2:
+    resolution: {integrity: sha512-Ic6m2U/rMjTkhERIa/0ZtXJP17QUi2CbWE7cqx4J58M8aA3QTfW+2UlQ4psvTX9IO1RfNVhK3pcpdjej7L+t2w==}
+    engines: {node: '>=14.0.0'}
+    dev: false
 
   /@rollup/rollup-android-arm-eabi/4.60.4:
     resolution: {integrity: sha512-F5QXMSiFebS9hKZj02XhWLLnRpJ3B3AROP0tWbFBSj+6kCbg5m9j5JoHKd4mmSVy5mS/IMQloYgYxCuJC0fxEQ==}
@@ -502,6 +509,29 @@ packages:
       loose-envify: 1.4.0
       react: 18.3.1
       scheduler: 0.23.2
+    dev: false
+
+  /react-router-dom/6.30.3_nnrd3gsncyragczmpvfhocinkq:
+    resolution: {integrity: sha512-pxPcv1AczD4vso7G4Z3TKcvlxK7g7TNt3/FNGMhfqyntocvYKj+GCatfigGDjbLozC4baguJ0ReCigoDJXb0ag==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.23.2
+      react: 18.3.1
+      react-dom: 18.3.1_react@18.3.1
+      react-router: 6.30.3_react@18.3.1
+    dev: false
+
+  /react-router/6.30.3_react@18.3.1:
+    resolution: {integrity: sha512-XRnlbKMTmktBkjCLE8/XcZFlnHvr2Ltdr1eJX4idL55/9BbORzyZEaIkBFDhFGCEWBBItsVrDxwx3gnisMitdw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      react: '>=16.8'
+    dependencies:
+      '@remix-run/router': 1.23.2
+      react: 18.3.1
     dev: false
 
   /react/18.3.1:

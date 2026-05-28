@@ -27,3 +27,18 @@ header h1{
   margin:0 0 8px 0;
   color:var(--accent);
 }
+
+.tutor-card{
+  border:1px solid #eee;
+  padding:12px;
+  border-radius:6px;
+  background:linear-gradient(180deg,#fff,#fbfdff);
+}
+
+nav a{ color:var(--accent); text-decoration:none }
+nav a:hover{ text-decoration:underline }
+
+input,textarea,select{ padding:8px; border:1px solid #ddd; border-radius:6px }
+button{ background:var(--accent); color:white; border:none; padding:8px 10px; border-radius:6px }
+
+main{ margin-top:12px }
