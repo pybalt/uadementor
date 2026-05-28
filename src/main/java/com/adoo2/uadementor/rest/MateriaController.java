@@ -1,7 +1,7 @@
 package com.adoo2.uadementor.rest;
 
-import com.adoo2.uadementor.rest.dto.SesionIndividualDTO;
-import com.adoo2.uadementor.rest.dto.SesionGrupalDTO;
+import com.adoo2.uadementor.rest.dto.MentoriaIndividualDTO;
+import com.adoo2.uadementor.rest.dto.MentoriaGrupalDTO;
 import com.adoo2.uadementor.rest.dto.TraduccionDTO;
 import com.adoo2.uadementor.service.MateriaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +14,22 @@ public class MateriaController {
     private MateriaService materiaService;
 
     @PostMapping("/individual")
-    public void agregarServicioIndividual(@RequestBody SesionIndividualDTO servicio) {
+    public void agregarServicioIndividual(@RequestBody MentoriaIndividualDTO servicio) {
         materiaService.agregarServicioIndividual(servicio);
     }
 
     @DeleteMapping("/individual")
-    public void eliminarServicioIndividual(@RequestBody SesionIndividualDTO servicio) {
+    public void eliminarServicioIndividual(@RequestBody MentoriaIndividualDTO servicio) {
         materiaService.eliminarServicioIndividual(servicio);
     }
 
     @PostMapping("/grupal")
-    public void agregarServicioGrupal(@RequestBody SesionGrupalDTO servicio) {
+    public void agregarServicioGrupal(@RequestBody MentoriaGrupalDTO servicio) {
         materiaService.agregarServicioGrupal(servicio);
     }
 
     @DeleteMapping("/grupal")
-    public void eliminarServicioGrupal(@RequestBody SesionGrupalDTO servicio) {
+    public void eliminarServicioGrupal(@RequestBody MentoriaGrupalDTO servicio) {
         materiaService.eliminarServicioGrupal(servicio);
     }
 

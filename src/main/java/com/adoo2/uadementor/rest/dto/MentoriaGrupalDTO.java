@@ -9,12 +9,10 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SesionGrupalDTO {
+public class MentoriaGrupalDTO {
     private String descripcion;
     private double precio;
     private int duracion;
     private String zona;
     private int tamMaxGrupo;
 }
-
-
