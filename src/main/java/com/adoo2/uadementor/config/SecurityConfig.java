@@ -25,16 +25,23 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers("/error/**").permitAll()
-                        .requestMatchers("/sesiones-mentoria/{id}/aceptar").hasRole("TUTOR")
-                        .requestMatchers("/tutores/**").hasRole("ALUMNO")
-                        .requestMatchers("/sesiones-mentoria/**").hasRole("ALUMNO")
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/error/**").permitAll()
+                // allow H2 console and root for local/dev access
+                .requestMatchers("/h2-console/**").permitAll()
+                .requestMatchers("/").permitAll()
+                .requestMatchers("/index.html").permitAll()
+                .requestMatchers("/sesiones-mentoria/{id}/aceptar").hasRole("TUTOR")
+                .requestMatchers("/tutores/**").hasRole("ALUMNO")
+                .requestMatchers("/sesiones-mentoria/**").hasRole("ALUMNO")
 
-                        .anyRequest().authenticated())
+                .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // If using the H2 console, it requires frames to be allowed
+        http.headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();
     }
