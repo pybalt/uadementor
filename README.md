@@ -38,3 +38,35 @@ spring.jpa.hibernate.ddl-auto=update
 
 Security note: the H2 console is enabled for development convenience. Do NOT enable the console or the in-memory profile in production.
 
+## Development scripts
+
+Helper scripts are provided to start backend and frontend in separate terminals.
+
+Windows (PowerShell):
+
+```powershell
+.\scripts\run-dev.ps1
+```
+
+Unix / macOS:
+
+```bash
+./scripts/run-dev.sh
+```
+
+### Run with MySQL
+If you want to run using MySQL instead of H2, activate the `mysql` profile:
+
+```powershell
+.\gradlew.bat bootRun -Dspring-boot.run.profiles=mysql
+```
+
+Or set the environment variable:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE='mysql'
+.\gradlew.bat bootRun
+```
+
+The `application-mysql.properties` file contains the MySQL connection settings.
+
