@@ -15,12 +15,10 @@ export default function Login({ onLogin }) {
     setError('')
     setLoading(true)
     try {
-      // Intentar login real contra el backend
       const user = await login(email, password)
       onLogin(user)
       nav('/')
     } catch (err) {
-      // Fallback a mock si el backend no está disponible
       try {
         const mockUser = await loginMock(email)
         if (mockUser) {
