@@ -8,6 +8,8 @@ import com.adoo2.uadementor.rest.dto.CrearSesionRequest;
 import com.adoo2.uadementor.model.*;
 import com.adoo2.uadementor.repository.*;
 
+import java.util.List;
+
 @Service
 public class SesionMentoriaService {
         @Autowired
@@ -122,6 +124,26 @@ public class SesionMentoriaService {
                 Alumno alumno = sesionMentoria.getAlumno();
                 sesionMentoria.setEstadoSesion(getEstadoSesion(sesionMentoria.getEstado()));
                 sesionMentoria.reservar(tutor, alumno);
+                return sesionMentoriaRepository.save(sesionMentoria);
+        }
+
+        public List<SesionMentoria> listarSesiones(Long alumnoId, Long tutorId) {
+                if (alumnoId != null) {
+                        return sesionMentoriaRepository.findByAlumnoId(alumnoId);
+                } else if (tutorId != null) {
+                        return sesionMentoriaRepository.findByTutorId(tutorId);
+                }
+                return sesionMentoriaRepository.findAll();
+        }
+
+        @Transactional
+        public SesionMentoria cancelarSesion(Long id) {
+                SesionMentoria sesionMentoria = sesionMentoriaRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("SesionMentoria no encontrada"));
+                Tutor tutor = sesionMentoria.getTutor();
+                Alumno alumno = sesionMentoria.getAlumno();
+                sesionMentoria.setEstadoSesion(getEstadoSesion(sesionMentoria.getEstado()));
+                sesionMentoria.cancelar(tutor, alumno);
                 return sesionMentoriaRepository.save(sesionMentoria);
         }
 

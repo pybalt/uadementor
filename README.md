@@ -10,6 +10,69 @@ El sistema permite gestionar:
 * Historial académico
 * Gamificación mediante logros
 
+---
+
+## ⚡ Inicio rápido ← NUEVO
+
+La forma más fácil de levantar todo (backend + frontend) es con el script `start.bat` en la raíz del proyecto:
+
+```cmd
+cmd /c start.bat
+```
+
+Esto abre **dos ventanas automáticamente**:
+- `Backend - Spring Boot` → `http://localhost:8080`
+- `Frontend - React Vite` → `http://localhost:5173`
+
+Esperá ~15 segundos a que el backend arranque, luego abrí `http://localhost:5173` en el navegador.
+
+---
+
+## 👤 Usuarios de prueba ← NUEVO
+
+Al arrancar con el perfil `h2`, el sistema carga automáticamente estos usuarios:
+
+| Rol | Email | Contraseña |
+|---|---|---|
+| Alumno | `alumno1@demo.com` | `password123` |
+| Alumno | `alumno2@demo.com` | `password123` |
+| Tutor  | `tutor1@demo.com`  | `password123` |
+| Tutor  | `tutor2@demo.com`  | `password123` |
+| Tutor  | `tutor3@demo.com`  | `password123` |
+
+También se crean 7 materias y 3 calificaciones de ejemplo.
+
+---
+
+## 🌐 Frontend (React + Vite) ← NUEVO
+
+El frontend está en la carpeta `web/`. Páginas disponibles:
+
+| Ruta | Descripción |
+|---|---|
+| `/` | Home |
+| `/tutors` | Listado y búsqueda de tutores |
+| `/tutors/:id` | Perfil del tutor, reservar sesión y dejar reseña |
+| `/bookings` | Mis reservas con opción de cancelar |
+| `/profile` | Perfil del usuario, logros y cerrar sesión |
+| `/login` | Login real contra el backend con JWT |
+| `/register` | Registro de nuevo alumno o tutor |
+
+El frontend intenta conectarse al backend real. Si no está disponible, cae automáticamente a datos mock para desarrollo.
+
+---
+
+## 🔌 Endpoints nuevos ← NUEVO
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| `GET` | `/tutores/{id}` | Obtener tutor por ID |
+| `GET` | `/sesiones-mentoria?alumnoId=X` | Sesiones de un alumno |
+| `GET` | `/sesiones-mentoria?tutorId=X` | Sesiones de un tutor |
+| `PUT` | `/sesiones-mentoria/{id}/cancelar` | Cancelar una sesión |
+
+---
+
 ## Running with H2 (local development)
 
 The project includes an H2 configuration for local development at [src/main/resources/application-h2.properties](src/main/resources/application-h2.properties).
@@ -69,4 +132,3 @@ $env:SPRING_PROFILES_ACTIVE='mysql'
 ```
 
 The `application-mysql.properties` file contains the MySQL connection settings.
-

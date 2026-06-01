@@ -9,11 +9,25 @@ import com.adoo2.uadementor.rest.dto.CrearSesionRequest;
 import com.adoo2.uadementor.model.SesionMentoria;
 import com.adoo2.uadementor.service.SesionMentoriaService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/sesiones-mentoria")
 public class SesionMentoriaController {
     @Autowired
     private SesionMentoriaService sesionMentoriaService;
+
+    @GetMapping
+    public ResponseEntity<List<SesionMentoria>> listarSesiones(
+            @RequestParam(required = false) Long alumnoId,
+            @RequestParam(required = false) Long tutorId) {
+        try {
+            List<SesionMentoria> sesiones = sesionMentoriaService.listarSesiones(alumnoId, tutorId);
+            return ResponseEntity.ok(sesiones);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 
     @PostMapping
     public ResponseEntity<SesionMentoria> crearSesion(@RequestBody CrearSesionRequest request) {
@@ -69,6 +83,16 @@ public class SesionMentoriaController {
     public ResponseEntity<SesionMentoria> abonarTotal(@PathVariable Long id) {
         try {
             SesionMentoria sesion = sesionMentoriaService.abonarTotal(id);
+            return ResponseEntity.ok(sesion);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<SesionMentoria> cancelar(@PathVariable Long id) {
+        try {
+            SesionMentoria sesion = sesionMentoriaService.cancelarSesion(id);
             return ResponseEntity.ok(sesion);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
