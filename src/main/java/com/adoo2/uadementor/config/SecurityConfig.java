@@ -38,7 +38,10 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/tutores/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reservas/**").permitAll()
                 .requestMatchers("/usuarios/generarCalificacion").permitAll()
-                .requestMatchers("/sesiones-mentoria/{id}/aceptar").hasRole("TUTOR")
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/sesiones-mentoria/{id}/aceptar").hasRole("TUTOR")
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/sesiones-mentoria/{id}/concretar").hasRole("TUTOR")
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/sesiones-mentoria").hasAnyRole("ALUMNO", "TUTOR")
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/sesiones-mentoria/{id}/cancelar").hasAnyRole("ALUMNO", "TUTOR")
                 .requestMatchers("/tutores/**").hasRole("ALUMNO")
                 .requestMatchers("/sesiones-mentoria/**").hasRole("ALUMNO")
 

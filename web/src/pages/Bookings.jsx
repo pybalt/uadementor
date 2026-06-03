@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getSesionesByAlumno, cancelarSesion } from '../services/api'
+import { 
+  getSesionesByAlumno, 
+  getSesionesByTutor, 
+  cancelarSesion, 
+  aceptarSesion, 
+  concretarSesion 
+} from '../services/api'
 import { getBookingsForUser } from '../services/mockApi'
 
 const ESTADO_COLOR = {
@@ -19,15 +25,21 @@ export default function Bookings({ user }) {
   const [loading, setLoading] = useState(false)
   const [msg, setMsg] = useState('')
 
+  const isTutor = user && user.role === 'tutor'
+
   useEffect(() => {
     if (!user) return
     setLoading(true)
-    // Intentar con backend real, fallback a mock
-    getSesionesByAlumno(user.id)
+    
+    const fetchPromise = isTutor
+      ? getSesionesByTutor(user.id)
+      : getSesionesByAlumno(user.id)
+
+    fetchPromise
       .then(setList)
       .catch(() => getBookingsForUser(user.id).then(setList))
       .finally(() => setLoading(false))
-  }, [user])
+  }, [user, isTutor])
 
   async function onCancelar(id) {
     if (!confirm('¿Cancelar esta sesión?')) return
@@ -40,6 +52,26 @@ export default function Bookings({ user }) {
     }
   }
 
+  async function onAceptar(id) {
+    try {
+      await aceptarSesion(id)
+      setMsg('Sesión aceptada exitosamente.')
+      setList(l => l.map(s => s.id === id ? { ...s, estado: 'Aceptado' } : s))
+    } catch (e) {
+      setMsg('Error al aceptar: ' + e.message)
+    }
+  }
+
+  async function onConcretar(id) {
+    try {
+      await concretarSesion(id)
+      setMsg('Sesión marcada como concretada.')
+      setList(l => l.map(s => s.id === id ? { ...s, estado: 'Concretado' } : s))
+    } catch (e) {
+      setMsg('Error al concretar: ' + e.message)
+    }
+  }
+
   if (!user) return (
     <div>
       <p>Necesitás <a href="/login" style={{ color: 'var(--accent-2)' }}>iniciar sesión</a> para ver tus reservas.</p>
@@ -48,7 +80,7 @@ export default function Bookings({ user }) {
 
   return (
     <div>
-      <h2>Mis Reservas</h2>
+      <h2>{isTutor ? 'Mis Tutorías (como Mentor)' : 'Mis Reservas'}</h2>
 
       {msg && (
         <div style={{
@@ -64,21 +96,28 @@ export default function Bookings({ user }) {
 
       {!loading && list.length === 0 && (
         <div style={{ color: 'var(--muted)', marginTop: 12 }}>
-          No tenés reservas todavía.{' '}
-          <a href="/tutors" style={{ color: 'var(--accent-2)' }}>Buscá un tutor</a>.
+          {isTutor ? 'No tenés tutorías programadas todavía.' : 'No tenés reservas todavía.'}{' '}
+          {!isTutor && <a href="/tutors" style={{ color: 'var(--accent-2)' }}>Buscá un tutor</a>}
         </div>
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
         {list.map((s, i) => {
           const estado = s.estado || s.status || 'Pendiente'
-          const tutorNombre = s.tutor
-            ? `${s.tutor.nombre} ${s.tutor.apellido}`
-            : `Tutor #${s.tutorId || '—'}`
+          
+          const oppositePartyName = isTutor
+            ? (s.alumno ? `${s.alumno.nombre} ${s.alumno.apellido}` : `Alumno #${s.alumnoId || '—'}`)
+            : (s.tutor ? `${s.tutor.nombre} ${s.tutor.apellido}` : `Tutor #${s.tutorId || '—'}`)
+
+          const labelParty = isTutor ? 'Alumno' : 'Tutor'
+
           const fecha = s.fechaInicio
             ? new Date(s.fechaInicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
             : s.date || '—'
+          
           const cancelable = !['SesionCancelada', 'Cancelado', 'Concretado'].includes(estado)
+          const aceptable = isTutor && estado === 'Reservado'
+          const concretable = isTutor && estado === 'Aceptado'
 
           return (
             <div key={s.id || i} style={{
@@ -88,7 +127,7 @@ export default function Bookings({ user }) {
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10
             }}>
               <div>
-                <div style={{ fontWeight: 600 }}>{tutorNombre}</div>
+                <div style={{ fontWeight: 600 }}>{oppositePartyName} <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 400 }}>({labelParty})</span></div>
                 <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 2 }}>{fecha}</div>
                 {s.total > 0 && (
                   <div style={{ color: 'var(--muted)', fontSize: 13 }}>Total: ${s.total}</div>
@@ -102,12 +141,32 @@ export default function Bookings({ user }) {
                 }}>
                   {estado}
                 </span>
+
+                {/* Acciones para Tutor */}
+                {aceptable && (
+                  <button
+                    onClick={() => onAceptar(s.id)}
+                    style={{ background: 'rgba(168,230,163,0.15)', color: '#a8e6a3', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  >
+                    Aceptar
+                  </button>
+                )}
+                {concretable && (
+                  <button
+                    onClick={() => onConcretar(s.id)}
+                    style={{ background: 'rgba(109,220,109,0.15)', color: '#6ddc6d', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  >
+                    Concretar
+                  </button>
+                )}
+
+                {/* Cancelar (común o condicionado) */}
                 {cancelable && (
                   <button
                     onClick={() => onCancelar(s.id)}
                     style={{ background: 'rgba(255,107,107,0.15)', color: '#ff6b6b', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}
                   >
-                    Cancelar
+                    {isTutor ? 'Rechazar / Cancelar' : 'Cancelar'}
                   </button>
                 )}
               </div>

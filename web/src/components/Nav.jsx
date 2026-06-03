@@ -17,11 +17,13 @@ export default function Nav({ user }) {
     ? (user.nombre || user.name || user.email || '').split(' ')[0]
     : null
 
+  const isTutor = user && user.role === 'tutor'
+  
   return (
     <nav>
       {navLink('/', 'Inicio')}
-      {navLink('/tutors', 'Tutores')}
-      {navLink('/bookings', 'Mis Reservas')}
+      {!isTutor && navLink('/tutors', 'Tutores')}
+      {navLink('/bookings', isTutor ? 'Mis Tutorías' : 'Mis Reservas')}
       {navLink('/profile', 'Mi Perfil')}
       <div className="nav-spacer" />
       <div className="user-badge">

@@ -147,6 +147,14 @@ export async function cancelarSesion(id) {
   return apiFetch(`/sesiones-mentoria/${id}/cancelar`, { method: 'PUT' })
 }
 
+export async function aceptarSesion(id) {
+  return apiFetch(`/sesiones-mentoria/${id}/aceptar`, { method: 'PUT' })
+}
+
+export async function concretarSesion(id) {
+  return apiFetch(`/sesiones-mentoria/${id}/concretar`, { method: 'PUT' })
+}
+
 // ── Reservas ─────────────────────────────────────────────────────────────────
 
 export async function getReservas() {
