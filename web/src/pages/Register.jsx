@@ -17,6 +17,7 @@ export default function Register({ onLogin }) {
   const [submitError, setSubmitError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   function onChange(e) {
     const { name, value } = e.target
@@ -78,98 +79,180 @@ export default function Register({ onLogin }) {
     }
   }
 
+  const pageStyle = {
+    minHeight: 'calc(100vh - 180px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px 12px',
+  }
+
+  const cardStyle = {
+    width: '100%',
+    maxWidth: 520,
+    boxSizing: 'border-box',
+    padding: 28,
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 16,
+    background: 'rgba(255,255,255,0.045)',
+    boxShadow: '0 18px 45px rgba(0,0,0,0.24)',
+  }
+
+  const headerStyle = {
+    margin: '0 0 18px',
+    textAlign: 'center',
+  }
+
+  const formStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+  }
+
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: 14,
+  }
+
+  const labelStyle = {
+    display: 'block',
+    marginBottom: 6,
+    color: 'var(--muted)',
+    fontSize: 13,
+  }
+
+  const fieldStyle = {
+    width: '100%',
+    boxSizing: 'border-box',
+  }
+
+  const selectStyle = {
+    ...fieldStyle,
+    background: '#111c2d',
+    color: '#e8eef7',
+    borderColor: 'rgba(255,255,255,0.1)',
+    colorScheme: 'dark',
+  }
+
+  const optionStyle = {
+    background: '#111c2d',
+    color: '#e8eef7',
+  }
+
   const fieldErrorStyle = {
     color: '#ff8f8f',
     fontSize: 12,
-    marginTop: 4,
+    marginTop: 5,
+  }
+
+  const checkboxLabelStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    color: 'var(--muted)',
+    fontSize: 13,
+    marginTop: 8,
+    cursor: 'pointer',
   }
 
   const alertBaseStyle = {
     fontSize: 14,
-    padding: '8px 12px',
+    padding: '9px 12px',
     borderRadius: 8,
   }
 
   return (
-    <div style={{ maxWidth: 440, margin: '0 auto' }}>
-      <h2>Crear Cuenta</h2>
+    <div style={pageStyle}>
+      <section style={cardStyle}>
+        <h2 style={headerStyle}>Crear Cuenta</h2>
 
-      <form onSubmit={submit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form onSubmit={submit} noValidate style={formStyle}>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={gridStyle}>
+            <div>
+              <label style={labelStyle}>Nombre</label>
+              <input name="nombre" value={form.nombre} onChange={onChange} placeholder="Juan" style={fieldStyle} />
+              {errors.nombre && <div style={fieldErrorStyle}>{errors.nombre}</div>}
+            </div>
+            <div>
+              <label style={labelStyle}>Apellido</label>
+              <input name="apellido" value={form.apellido} onChange={onChange} placeholder="Pérez" style={fieldStyle} />
+              {errors.apellido && <div style={fieldErrorStyle}>{errors.apellido}</div>}
+            </div>
+          </div>
+
+          <div style={gridStyle}>
+            <div>
+              <label style={labelStyle}>DNI</label>
+              <input name="dni" type="number" value={form.dni} onChange={onChange} placeholder="40123456" style={fieldStyle} />
+              {errors.dni && <div style={fieldErrorStyle}>{errors.dni}</div>}
+            </div>
+            <div>
+              <label style={labelStyle}>Teléfono</label>
+              <input name="telefono" type="number" value={form.telefono} onChange={onChange} placeholder="1155551234" style={fieldStyle} />
+              {errors.telefono && <div style={fieldErrorStyle}>{errors.telefono}</div>}
+            </div>
+          </div>
+
           <div>
-            <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Nombre</label>
-            <input name="nombre" value={form.nombre} onChange={onChange} placeholder="Juan"
-              style={{ width: '100%', boxSizing: 'border-box' }} />
-            {errors.nombre && <div style={fieldErrorStyle}>{errors.nombre}</div>}
+            <label style={labelStyle}>Email</label>
+            <input name="email" type="email" value={form.email} onChange={onChange} placeholder="juan@email.com" style={fieldStyle} />
+            {errors.email && <div style={fieldErrorStyle}>{errors.email}</div>}
           </div>
+
           <div>
-            <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Apellido</label>
-            <input name="apellido" value={form.apellido} onChange={onChange} placeholder="Pérez"
-              style={{ width: '100%', boxSizing: 'border-box' }} />
-            {errors.apellido && <div style={fieldErrorStyle}>{errors.apellido}</div>}
+            <label style={labelStyle}>Contraseña</label>
+            <input
+              name="pass"
+              type={showPassword ? 'text' : 'password'}
+              value={form.pass}
+              onChange={onChange}
+              placeholder="Mínimo 6 caracteres"
+              style={fieldStyle}
+            />
+            <label style={checkboxLabelStyle}>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={e => setShowPassword(e.target.checked)}
+                style={{ margin: 0 }}
+              />
+              Mostrar contraseña
+            </label>
+            {errors.pass && <div style={fieldErrorStyle}>{errors.pass}</div>}
           </div>
-        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>DNI</label>
-            <input name="dni" type="number" value={form.dni} onChange={onChange} placeholder="40123456"
-              style={{ width: '100%', boxSizing: 'border-box' }} />
-            {errors.dni && <div style={fieldErrorStyle}>{errors.dni}</div>}
+            <label style={labelStyle}>Rol</label>
+            <select name="role" value={form.role} onChange={onChange} style={selectStyle}>
+              <option value="alumno" style={optionStyle}>Alumno - busco tutores</option>
+              <option value="tutor" style={optionStyle}>Tutor - ofrezco mentoría</option>
+            </select>
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Teléfono</label>
-            <input name="telefono" type="number" value={form.telefono} onChange={onChange} placeholder="1155551234"
-              style={{ width: '100%', boxSizing: 'border-box' }} />
-            {errors.telefono && <div style={fieldErrorStyle}>{errors.telefono}</div>}
-          </div>
-        </div>
 
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Email</label>
-          <input name="email" type="email" value={form.email} onChange={onChange} placeholder="juan@email.com"
-            style={{ width: '100%', boxSizing: 'border-box' }} />
-          {errors.email && <div style={fieldErrorStyle}>{errors.email}</div>}
-        </div>
+          {submitError && (
+            <div style={{ ...alertBaseStyle, color: '#ff6b6b', background: 'rgba(255,107,107,0.08)' }}>
+              {submitError}
+            </div>
+          )}
 
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Contraseña</label>
-          <input name="pass" type="password" value={form.pass} onChange={onChange} placeholder="Mínimo 6 caracteres"
-            style={{ width: '100%', boxSizing: 'border-box' }} />
-          {errors.pass && <div style={fieldErrorStyle}>{errors.pass}</div>}
-        </div>
+          {success && (
+            <div style={{ ...alertBaseStyle, color: '#5ee6a8', background: 'rgba(94,230,168,0.08)' }}>
+              {success}
+            </div>
+          )}
 
-        <div>
-          <label style={{ display: 'block', marginBottom: 4, color: 'var(--muted)', fontSize: 13 }}>Rol</label>
-          <select name="role" value={form.role} onChange={onChange}
-            style={{ width: '100%', boxSizing: 'border-box' }}>
-            <option value="alumno">Alumno - busco tutores</option>
-            <option value="tutor">Tutor - ofrezco mentoría</option>
-          </select>
-        </div>
+          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: 2 }}>
+            {loading ? 'Creando cuenta...' : 'Registrarse'}
+          </button>
+        </form>
 
-        {submitError && (
-          <div style={{ ...alertBaseStyle, color: '#ff6b6b', background: 'rgba(255,107,107,0.08)' }}>
-            {submitError}
-          </div>
-        )}
-
-        {success && (
-          <div style={{ ...alertBaseStyle, color: '#5ee6a8', background: 'rgba(94,230,168,0.08)' }}>
-            {success}
-          </div>
-        )}
-
-        <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: 4 }}>
-          {loading ? 'Creando cuenta...' : 'Registrarse'}
-        </button>
-      </form>
-
-      <p style={{ marginTop: 16, color: 'var(--muted)', fontSize: 14 }}>
-        ¿Ya tenés cuenta?{' '}
-        <Link to="/login" style={{ color: 'var(--accent-2)' }}>Iniciar sesión</Link>
-      </p>
+        <p style={{ margin: '18px 0 0', color: 'var(--muted)', fontSize: 14, textAlign: 'center' }}>
+          ¿Ya tenés cuenta?{' '}
+          <Link to="/login" style={{ color: 'var(--accent-2)' }}>Iniciar sesión</Link>
+        </p>
+      </section>
     </div>
   )
 }
