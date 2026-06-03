@@ -19,25 +19,9 @@ html,body,#root{
 body{
   font-family: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', sans-serif;
   color: #e6eef6;
-  position: relative;
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background-image:url('./assets/uade-seal.png');
-  background-repeat:no-repeat;
-  background-position:center center;
-  background-size:min(95vw, 700px);
-  opacity:0.01;
-  pointer-events:none;
-  z-index:0;
 }
 
 .app{
-  position:relative;
-  z-index:1;
   max-width:980px;
   margin:56px auto;
   padding:32px;
