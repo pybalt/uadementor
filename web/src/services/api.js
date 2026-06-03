@@ -45,7 +45,12 @@ async function apiFetch(path, opts = {}) {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(opts.headers || {}),
   }
-  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers })
+  let res
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...opts, headers })
+  } catch {
+    throw new Error('No se pudo conectar con el servidor.')
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
     throw new Error(`${res.status} ${text}`)
