@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/").permitAll()
                 .requestMatchers("/index.html").permitAll()
+                // Allow Swagger UI and OpenAPI docs access
+                .requestMatchers("/docs/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/tutores/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/reservas/**").permitAll()
                 .requestMatchers("/usuarios/generarCalificacion").permitAll()
