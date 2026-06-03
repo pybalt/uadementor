@@ -77,7 +77,7 @@ export async function login(email, password) {
   // Decodificar el JWT para obtener info básica del usuario
   const payload = parseJwt(data.accessToken)
   const user = {
-    email: payload.sub,
+    email: payload.sub || email,
     role: payload.role || detectRole(payload),
     nombre: payload.nombre || email.split('@')[0],
     apellido: payload.apellido || '',
@@ -98,7 +98,7 @@ export async function register({ nombre, apellido, dni, email, pass, telefono, r
   saveToken(data.accessToken)
   const payload = parseJwt(data.accessToken)
   const user = {
-    email: payload.sub,
+    email: payload.sub || email,
     role: role,
     nombre,
     apellido,
