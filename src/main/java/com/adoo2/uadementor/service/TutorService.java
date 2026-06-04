@@ -41,6 +41,10 @@ public class TutorService {
         return tutorRepository.findByNombreContainingOrApellidoContaining(nombre, apellido);
     }
 
+    public List<Tutor> buscarPorQuery(String q) {
+        return tutorRepository.buscarPorNombreApellidoOMateria(q);
+    }
+
     public Optional<Tutor> findById(Long id) {
         return tutorRepository.findById(id);
     }

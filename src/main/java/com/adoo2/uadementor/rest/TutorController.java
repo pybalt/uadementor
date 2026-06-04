@@ -44,6 +44,11 @@ public class TutorController {
     public List<Tutor> buscarTutor(@RequestParam String nombre, @RequestParam(defaultValue = "") String apellido) {
         return tutorService.buscarTutor(nombre, apellido);
     }
+
+    @GetMapping("/search")
+    public List<Tutor> search(@RequestParam String q) {
+        return tutorService.buscarPorQuery(q);
+    }
 }
 
 
