@@ -72,10 +72,11 @@ export async function login(email, password) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
-  saveToken(data.accessToken)
+  const token = data.access_token || data.accessToken
+  saveToken(token)
 
   // Decodificar el JWT para obtener info básica del usuario
-  const payload = parseJwt(data.accessToken)
+  const payload = parseJwt(token)
   const user = {
     email: payload.sub || email,
     role: payload.role || detectRole(payload),
@@ -95,8 +96,9 @@ export async function register({ nombre, apellido, dni, email, pass, telefono, r
     method: 'POST',
     body: JSON.stringify({ nombre, apellido, dni, email, pass, telefono, role }),
   })
-  saveToken(data.accessToken)
-  const payload = parseJwt(data.accessToken)
+  const token = data.access_token || data.accessToken
+  saveToken(token)
+  const payload = parseJwt(token)
   const user = {
     email: payload.sub || email,
     role: role,

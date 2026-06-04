@@ -52,6 +52,7 @@ public class Usuario implements UserDetails {
     private byte[] fotoPerfil;
 
     @OneToMany(mappedBy = "alumno")
+    @JsonIgnore
     private List<SesionMentoria> historialSesiones;
 
     @OneToMany(mappedBy = "usuario")
@@ -85,13 +86,22 @@ public class Usuario implements UserDetails {
     }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.getClass().getSimpleName().equals("Tutor")) {
+        if (this instanceof Tutor) {
             return List.of(new SimpleGrantedAuthority("ROLE_TUTOR"));
-        } else if (this.getClass().getSimpleName().equals("Alumno")) {
+        } else if (this instanceof Alumno) {
             return List.of(new SimpleGrantedAuthority("ROLE_ALUMNO"));
         } else {
             return List.of();
         }
+    }
+
+    public String getRole() {
+        if (this instanceof Tutor) {
+            return "tutor";
+        } else if (this instanceof Alumno) {
+            return "alumno";
+        }
+        return this.role;
     }
 
     @Override

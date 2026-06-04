@@ -27,12 +27,21 @@ public class JwtService {
     }
 
     private String buildToken(UserDetails userDetails, long expiration) {
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .claim("uadeMentor", 123)
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSecretKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + expiration));
+
+        if (userDetails instanceof com.adoo2.uadementor.model.Usuario) {
+            com.adoo2.uadementor.model.Usuario user = (com.adoo2.uadementor.model.Usuario) userDetails;
+            builder.claim("id", user.getId())
+                   .claim("nombre", user.getNombre())
+                   .claim("apellido", user.getApellido())
+                   .claim("role", user.getRole());
+        }
+
+        return builder.signWith(getSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 

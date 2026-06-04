@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Getter
@@ -21,6 +22,7 @@ public class Alumno extends Usuario {
 
     private int puntuacion;
     @OneToMany(mappedBy = "alumno", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Calificacion> calificaciones;
 
     public Alumno(String nombre, String apellido, int dni, String email, String pass, int telefono) {

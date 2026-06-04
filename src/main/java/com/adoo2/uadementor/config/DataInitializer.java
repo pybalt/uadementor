@@ -35,6 +35,7 @@ public class DataInitializer implements CommandLineRunner {
     private final TutorRepository tutorRepository;
     private final MateriaRepository materiaRepository;
     private final CalificacionRepository calificacionRepository;
+    private final SesionMentoriaRepository sesionMentoriaRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -184,6 +185,22 @@ public class DataInitializer implements CommandLineRunner {
 
         calificacionRepository.saveAll(List.of(cal1, cal2, cal3));
         log.info("  -> 3 calificaciones de ejemplo creadas");
+
+        // ----------------------------------------------------------------
+        // 5. Sesiones de mentoria de prueba
+        // ----------------------------------------------------------------
+        SesionMentoria sesion1 = new SesionMentoria();
+        sesion1.setFechaInicio(new Date());
+        sesion1.setFechaFin(new Date());
+        sesion1.setComisionDePlataforma(5.0);
+        sesion1.setAnticipo(10.0);
+        sesion1.setTotal(50.0);
+        sesion1.setTutor(tutor1);
+        sesion1.setAlumno(alumno1);
+        sesion1.setMateria(algebra1);
+        sesion1.setEstado("Reservado");
+        sesionMentoriaRepository.save(sesion1);
+        log.info("  -> 1 sesión de mentoría de prueba creada (Reservado)");
 
         log.info("=== DataInitializer: listo. Contraseña de todos los usuarios: password123 ===");
     }
