@@ -33,7 +33,7 @@ export default function App() {
 
         <main>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Home user={user} />} />
             <Route path="/tutors" element={<Tutors />} />
             <Route path="/tutors/:id" element={<TutorProfile user={user} />} />
             <Route path="/bookings" element={<Bookings user={user} />} />
