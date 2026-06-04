@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.adoo2.uadementor.service.IEstadoReserva;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter
 @Setter
@@ -22,6 +23,7 @@ public class Reserva {
 
     @Autowired
     @Transient
+    @JsonIgnore
     private IEstadoReserva estado;
 
     @ManyToOne

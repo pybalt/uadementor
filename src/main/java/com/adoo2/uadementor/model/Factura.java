@@ -2,6 +2,7 @@ package com.adoo2.uadementor.model;
 
 import com.adoo2.uadementor.service.IEstado;
 import com.adoo2.uadementor.service.Notificaciones_email;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,7 @@ public class Factura {
     private Date fechaFactura;
 
     @Transient
+    @JsonIgnore
     private IEstado estado;
 
     private String estadoFactura;

@@ -1,6 +1,7 @@
 package com.adoo2.uadementor.model;
 
 import com.adoo2.uadementor.service.IEstadoSesion;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,6 +53,7 @@ public class SesionMentoria {
     private String estado;
 
     @Transient
+    @JsonIgnore
     private IEstadoSesion estadoSesion;
 
     public double precioTotal() {
