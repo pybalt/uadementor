@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Nav from './components/Nav'
+import { NavBar } from './components/ds'
 import Home from './pages/Home'
 import Tutors from './pages/Tutors'
 import TutorProfile from './pages/TutorProfile'
@@ -25,11 +25,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="app">
-        <header>
-          <h1>UADE Mentor</h1>
-        </header>
-
-        <Nav user={user} />
+        <NavBar user={user} />
 
         <main>
           <Routes>

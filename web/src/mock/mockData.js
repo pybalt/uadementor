@@ -1,46 +1,138 @@
 const tutors = [
   {
-    id: 't1',
-    name: 'María Gómez',
-    subjects: ['Matemática', 'Álgebra', 'Cálculo'],
-    rating: 4.8,
-    bio: 'Titulada en Matemáticas, 5 años de experiencia dando apoyo universitario.',
-    modality: 'Presencial y Online',
-    hourlyRate: 1500,
+    id: 'm1',
+    name: 'Florencia Díaz',
+    subjects: ['Programación', 'Bases de Datos'],
+    rating: 5.0,
+    reviewCount: 38,
+    bio: 'Desarrolladora full-stack con 6 años de experiencia, especializada en bases de datos relacionales y backend.',
+    modality: 'Online',
+    hourlyRate: 2000,
     reviews: [
-      { id: 'r1', user: 'Juan', stars: 5, comment: 'Excelente explicaciones.' }
+      { id: 'r1', user: 'Marcos', stars: 5, comment: 'Explica SQL de una manera súper clara.' },
+      { id: 'r2', user: 'Julia', stars: 5, comment: 'Me ayudó muchísimo con el proyecto final.' },
     ],
     achievements: ['Tutor Destacado'],
   },
   {
-    id: 't2',
+    id: 'm2',
+    name: 'María Gómez',
+    subjects: ['Matemática', 'Álgebra', 'Cálculo'],
+    rating: 4.9,
+    reviewCount: 30,
+    bio: 'Titulada en Matemáticas, 5 años de experiencia dando apoyo universitario.',
+    modality: 'Presencial y Online',
+    hourlyRate: 1500,
+    reviews: [
+      { id: 'r3', user: 'Juan', stars: 5, comment: 'Excelente explicaciones, mucha paciencia.' },
+      { id: 'r4', user: 'Camila', stars: 5, comment: 'Me ayudó a aprobar el final de Análisis II.' },
+    ],
+    achievements: ['Tutor Destacado'],
+  },
+  {
+    id: 'm3',
+    name: 'Valentina Cruz',
+    subjects: ['Economía', 'Contabilidad'],
+    rating: 4.8,
+    reviewCount: 24,
+    bio: 'Contadora pública con experiencia en preparación de exámenes parciales y finales.',
+    modality: 'Presencial y Online',
+    hourlyRate: 1600,
+    reviews: [
+      { id: 'r5', user: 'Nicolás', stars: 5, comment: 'Súper recomendable para Contabilidad I.' },
+      { id: 'r6', user: 'Brenda', stars: 4, comment: 'Explica muy bien los ejercicios prácticos.' },
+    ],
+    achievements: ['Tutor Experto'],
+  },
+  {
+    id: 'm4',
+    name: 'Sofía Romero',
+    subjects: ['Marketing', 'Economía'],
+    rating: 4.7,
+    reviewCount: 20,
+    bio: 'Especialista en marketing digital, profesora universitaria con foco en casos prácticos.',
+    modality: 'Presencial y Online',
+    hourlyRate: 1400,
+    reviews: [
+      { id: 'r7', user: 'Lucía', stars: 5, comment: 'Sus clases son muy dinámicas y aplicadas.' },
+      { id: 'r8', user: 'Pedro', stars: 4, comment: 'Aprendí mucho sobre estrategias de marketing.' },
+    ],
+    achievements: ['Tutor Destacado'],
+  },
+  {
+    id: 'm5',
+    name: 'Carla Méndez',
+    subjects: ['Física', 'Matemática'],
+    rating: 4.5,
+    reviewCount: 15,
+    bio: 'Profesora de Física con enfoque práctico y resolución de problemas paso a paso.',
+    modality: 'Presencial',
+    hourlyRate: 1700,
+    reviews: [
+      { id: 'r9', user: 'Valeria', stars: 4, comment: 'Buen manejo de los temas de termodinámica.' },
+    ],
+    achievements: [],
+  },
+  {
+    id: 'm6',
     name: 'Lucas Fernández',
-    subjects: ['Programación', 'Java', 'Estructuras de Datos'],
-    rating: 4.6,
+    subjects: ['Programación', 'Estructuras de Datos'],
+    rating: 4.7,
+    reviewCount: 22,
     bio: 'Ingeniero en sistemas con 7 años enseñando programación.',
     modality: 'Online',
     hourlyRate: 1900,
     reviews: [
-      { id: 'r2', user: 'Ana', stars: 5, comment: 'Muy paciente y claro.' }
+      { id: 'r10', user: 'Ana', stars: 5, comment: 'Muy paciente y claro explicando algoritmos.' },
+      { id: 'r11', user: 'Tomás', stars: 4, comment: 'Buenas prácticas y ejemplos reales.' },
     ],
     achievements: ['Tutor Experto'],
-  }
+  },
+  {
+    id: 'm7',
+    name: 'Martín Silva',
+    subjects: ['Matemática', 'Cálculo', 'Álgebra'],
+    rating: 4.2,
+    reviewCount: 8,
+    bio: 'Estudiante avanzado de Ingeniería, ofrece apoyo en materias de los primeros años.',
+    modality: 'Presencial y Online',
+    hourlyRate: 1300,
+    reviews: [
+      { id: 'r12', user: 'Sol', stars: 4, comment: 'Buena onda y muy organizado con el material.' },
+    ],
+    achievements: [],
+  },
+  {
+    id: 'm8',
+    name: 'Diego Torres',
+    subjects: ['Física', 'Química'],
+    rating: 4.5,
+    reviewCount: 14,
+    bio: 'Profesor universitario de Física con enfoque práctico y resolución de problemas.',
+    modality: 'Presencial',
+    hourlyRate: 1700,
+    reviews: [
+      { id: 'r13', user: 'Bautista', stars: 5, comment: 'Domina muy bien los temas de mecánica.' },
+    ],
+    achievements: ['Tutor Experto'],
+  },
+  {
+    id: 'm9',
+    name: 'Bruno Acosta',
+    subjects: ['Programación', 'Bases de Datos', 'Estructuras de Datos'],
+    rating: 4.2,
+    reviewCount: 5,
+    bio: 'Desarrollador junior que ofrece tutorías de programación para estudiantes que recién empiezan.',
+    modality: 'Presencial',
+    hourlyRate: 1100,
+    reviews: [],
+    achievements: [],
+  },
 ]
 
 const users = [
   { id: 'u1', name: 'Alumno Demo', role: 'student', email: 'alumno@demo' },
-  { id: 'u2', name: 'Tutor Demo', role: 'tutor', email: 'tutor@demo' }
+  { id: 'u2', name: 'Tutor Demo', role: 'tutor', email: 'tutor@demo' },
 ]
 
-const bookings = [
-  // sample booking
-  {
-    id: 'b1',
-    tutorId: 't1',
-    userId: 'u1',
-    date: '2026-06-02T18:00:00',
-    status: 'Pendiente'
-  }
-]
-
-export { tutors, users, bookings }
+export { tutors, users }

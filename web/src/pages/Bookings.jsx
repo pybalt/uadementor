@@ -1,179 +1,205 @@
-import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { 
-  getSesionesByAlumno, 
-  getSesionesByTutor, 
-  cancelarSesion, 
-  aceptarSesion, 
-  concretarSesion 
+import React, { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import {
+  cancelarSesion,
+  aceptarSesion,
+  concretarSesion,
 } from '../services/api'
-import { getBookingsForUser } from '../services/mockApi'
+import { getBookingsForUser, cancelLocalSession } from '../services/mockApi'
+import { Alert, Avatar, Badge, Button, Card, Modal, Page, SectionTitle, StatusPill, Tabs } from '../components/ds'
+import { IconCalendar } from '../components/ds/icons'
 
-const ESTADO_COLOR = {
-  Disponible: '#88d1ff',
-  Reservado: '#ffd28a',
-  Aceptado: '#a8e6a3',
-  Concretado: '#6ddc6d',
-  SesionCancelada: '#ff6b6b',
-  Pendiente: '#ffd28a',
-  Cancelado: '#ff6b6b',
+const TERMINAL = ['SesionCancelada', 'Cancelado', 'Concretado']
+
+const MONTHS_SHORT = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+/** Formatea una fecha ISO como "13 de jun de 2026 · 18:00". */
+function formatFechaHora(value) {
+  if (!value) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  const day = d.getDate()
+  const month = MONTHS_SHORT[d.getMonth()]
+  const year = d.getFullYear()
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  return `${day} de ${month} de ${year} · ${hh}:${mm}`
 }
 
 export default function Bookings({ user }) {
-  const nav = useNavigate()
   const [list, setList] = useState([])
   const [loading, setLoading] = useState(false)
-  const [msg, setMsg] = useState('')
+  const [msg, setMsg] = useState(null)
+  const [tab, setTab] = useState('todas')
+  const [cancelTarget, setCancelTarget] = useState(null)
 
   const isTutor = user && user.role === 'tutor'
 
   useEffect(() => {
     if (!user) return
     setLoading(true)
-    
-    const fetchPromise = isTutor
-      ? getSesionesByTutor(user.id)
-      : getSesionesByAlumno(user.id)
-
-    fetchPromise
+    getBookingsForUser(user.id, isTutor)
       .then(setList)
-      .catch(() => getBookingsForUser(user.id).then(setList))
       .finally(() => setLoading(false))
   }, [user, isTutor])
 
-  async function onCancelar(id) {
-    if (!confirm('¿Cancelar esta sesión?')) return
+  function onCancelar(id) {
+    setCancelTarget(id)
+  }
+
+  async function confirmCancelar() {
+    const id = cancelTarget
+    setCancelTarget(null)
+    if (id == null) return
     try {
-      await cancelarSesion(id)
-      setMsg('Sesión cancelada.')
+      if (String(id).startsWith('local-')) {
+        cancelLocalSession(id)
+      } else {
+        await cancelarSesion(id)
+      }
+      setMsg({ tone: 'success', text: 'Sesión cancelada.' })
       setList(l => l.map(s => s.id === id ? { ...s, estado: 'SesionCancelada' } : s))
     } catch (e) {
-      setMsg('Error al cancelar: ' + e.message)
+      setMsg({ tone: 'danger', text: 'Error al cancelar: ' + e.message })
     }
   }
 
   async function onAceptar(id) {
     try {
       await aceptarSesion(id)
-      setMsg('Sesión aceptada exitosamente.')
+      setMsg({ tone: 'success', text: 'Sesión aceptada exitosamente.' })
       setList(l => l.map(s => s.id === id ? { ...s, estado: 'Aceptado' } : s))
     } catch (e) {
-      setMsg('Error al aceptar: ' + e.message)
+      setMsg({ tone: 'danger', text: 'Error al aceptar: ' + e.message })
     }
   }
 
   async function onConcretar(id) {
     try {
       await concretarSesion(id)
-      setMsg('Sesión marcada como concretada.')
+      setMsg({ tone: 'success', text: 'Sesión marcada como concretada.' })
       setList(l => l.map(s => s.id === id ? { ...s, estado: 'Concretado' } : s))
     } catch (e) {
-      setMsg('Error al concretar: ' + e.message)
+      setMsg({ tone: 'danger', text: 'Error al concretar: ' + e.message })
     }
   }
 
+  const filtered = useMemo(() => {
+    if (tab === 'activas') return list.filter(s => !TERMINAL.includes(s.estado || s.status))
+    if (tab === 'historial') return list.filter(s => TERMINAL.includes(s.estado || s.status))
+    return list
+  }, [list, tab])
+
   if (!user) return (
-    <div>
-      <p>Necesitás <a href="/login" style={{ color: 'var(--accent-2)' }}>iniciar sesión</a> para ver tus reservas.</p>
-    </div>
+    <Page>
+      <p>Necesitás <Link to="/login">iniciar sesión</Link> para ver tus reservas.</p>
+    </Page>
   )
 
+  const activas = list.filter(s => !TERMINAL.includes(s.estado || s.status)).length
+  const historial = list.filter(s => TERMINAL.includes(s.estado || s.status)).length
+
   return (
-    <div>
-      <h2>{isTutor ? 'Mis Tutorías (como Mentor)' : 'Mis Reservas'}</h2>
+    <Page>
+      <SectionTitle
+        eyebrow={isTutor ? 'Mentor' : undefined}
+        title={isTutor ? 'Mis Tutorías' : 'Mis Reservas'}
+        sub={isTutor ? 'Gestioná las solicitudes de tus alumnos.' : 'Seguí el estado de tus sesiones reservadas.'}
+      />
 
-      {msg && (
-        <div style={{
-          marginBottom: 12, padding: '8px 12px', borderRadius: 8, fontSize: 14,
-          background: msg.startsWith('Error') ? 'rgba(255,107,107,0.08)' : 'rgba(100,220,100,0.08)',
-          color: msg.startsWith('Error') ? '#ff6b6b' : '#6ddc6d'
-        }}>
-          {msg}
-        </div>
+      {msg && <Alert tone={msg.tone} style={{ marginBottom: 'var(--space-4)' }}>{msg.text}</Alert>}
+
+      <Tabs
+        value={tab}
+        onChange={setTab}
+        tabs={[
+          { value: 'todas', label: 'Todas', count: list.length },
+          { value: 'activas', label: 'Activas', count: activas },
+          { value: 'historial', label: 'Historial', count: historial },
+        ]}
+        style={{ marginBottom: 'var(--space-5)' }}
+      />
+
+      {loading && <p style={{ color: 'var(--text-muted)' }}>Cargando...</p>}
+
+      {!loading && filtered.length === 0 && (
+        <p style={{ color: 'var(--text-muted)' }}>
+          {isTutor ? 'No tenés tutorías en esta categoría.' : (
+            <>No tenés reservas en esta categoría. <Link to="/tutors">Buscá un tutor</Link></>
+          )}
+        </p>
       )}
 
-      {loading && <p style={{ color: 'var(--muted)' }}>Cargando...</p>}
-
-      {!loading && list.length === 0 && (
-        <div style={{ color: 'var(--muted)', marginTop: 12 }}>
-          {isTutor ? 'No tenés tutorías programadas todavía.' : 'No tenés reservas todavía.'}{' '}
-          {!isTutor && <a href="/tutors" style={{ color: 'var(--accent-2)' }}>Buscá un tutor</a>}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 8 }}>
-        {list.map((s, i) => {
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {filtered.map((s, i) => {
           const estado = s.estado || s.status || 'Pendiente'
-          
+
           const oppositePartyName = isTutor
             ? (s.alumno ? `${s.alumno.nombre} ${s.alumno.apellido}` : `Alumno #${s.alumnoId || '—'}`)
             : (s.tutor ? `${s.tutor.nombre} ${s.tutor.apellido}` : `Tutor #${s.tutorId || '—'}`)
 
           const labelParty = isTutor ? 'Alumno' : 'Tutor'
 
-          const fecha = s.fechaInicio
-            ? new Date(s.fechaInicio).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
-            : s.date || '—'
-          
-          const cancelable = !['SesionCancelada', 'Cancelado', 'Concretado'].includes(estado)
+          const subject = s.materia?.descripcion || s.materia || s.subject || null
+
+          const fecha = formatFechaHora(s.fechaInicio) || s.date || '—'
+
+          const cancelable = !TERMINAL.includes(estado)
           const aceptable = isTutor && estado === 'Reservado'
           const concretable = isTutor && estado === 'Aceptado'
 
           return (
-            <div key={s.id || i} style={{
-              padding: '14px 16px', borderRadius: 12,
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.04)',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10
-            }}>
-              <div>
-                <div style={{ fontWeight: 600 }}>{oppositePartyName} <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 400 }}>({labelParty})</span></div>
-                <div style={{ color: 'var(--muted)', fontSize: 13, marginTop: 2 }}>{fecha}</div>
-                {s.total > 0 && (
-                  <div style={{ color: 'var(--muted)', fontSize: 13 }}>Total: ${s.total}</div>
-                )}
+            <Card key={s.id || i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Avatar name={oppositePartyName} size={44} shape="circle" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--fw-bold)', color: 'var(--text-strong)' }}>{oppositePartyName}</span>
+                    <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>· {labelParty}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--text-strong)', fontSize: 'var(--text-sm)', fontWeight: 'var(--fw-semibold)' }}>
+                      <IconCalendar width={14} height={14} /> {fecha}
+                    </span>
+                    {subject && (
+                      <>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', padding: '0 6px' }}>·</span>
+                        <Badge tone="brand">{subject}</Badge>
+                      </>
+                    )}
+                    {s.total > 0 && (
+                      <>
+                        <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', padding: '0 6px' }}>·</span>
+                        <span style={{ color: 'var(--text-strong)', fontSize: 'var(--text-sm)', fontWeight: 'var(--fw-semibold)' }}>Precio: ${s.total}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{
-                  padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600,
-                  background: 'rgba(255,255,255,0.04)',
-                  color: ESTADO_COLOR[estado] || 'var(--muted)'
-                }}>
-                  {estado}
-                </span>
-
-                {/* Acciones para Tutor */}
-                {aceptable && (
-                  <button
-                    onClick={() => onAceptar(s.id)}
-                    style={{ background: 'rgba(168,230,163,0.15)', color: '#a8e6a3', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-                  >
-                    Aceptar
-                  </button>
-                )}
-                {concretable && (
-                  <button
-                    onClick={() => onConcretar(s.id)}
-                    style={{ background: 'rgba(109,220,109,0.15)', color: '#6ddc6d', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-                  >
-                    Concretar
-                  </button>
-                )}
-
-                {/* Cancelar (común o condicionado) */}
-                {cancelable && (
-                  <button
-                    onClick={() => onCancelar(s.id)}
-                    style={{ background: 'rgba(255,107,107,0.15)', color: '#ff6b6b', border: 'none', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}
-                  >
-                    {isTutor ? 'Rechazar / Cancelar' : 'Cancelar'}
-                  </button>
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <StatusPill status={estado} />
+                {aceptable && <Button size="sm" variant="subtle" onClick={() => onAceptar(s.id)}>Aceptar</Button>}
+                {concretable && <Button size="sm" onClick={() => onConcretar(s.id)}>Concretar</Button>}
+                {cancelable && <Button size="sm" variant="danger" onClick={() => onCancelar(s.id)}>{isTutor ? 'Rechazar' : 'Cancelar'}</Button>}
               </div>
-            </div>
+            </Card>
           )
         })}
       </div>
-    </div>
+
+      <Modal
+        open={cancelTarget != null}
+        title="¿Cancelar esta sesión?"
+        onClose={() => setCancelTarget(null)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setCancelTarget(null)}>Volver</Button>
+            <Button variant="danger" onClick={confirmCancelar}>Confirmar cancelación</Button>
+          </>
+        }
+      >
+        Esta acción moverá la reserva al historial como cancelada.
+      </Modal>
+    </Page>
   )
 }
