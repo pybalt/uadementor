@@ -1,167 +1,276 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { getTutorById, createBooking, addReview } from '../services/mockApi'
+import { useParams, useNavigate, Link } from 'react-router-dom'
+import { getTutorById, createBooking, addReview, editLocalReview, deleteLocalReview, getBookingsForUser } from '../services/mockApi'
+import { Alert, Avatar, Badge, Button, Card, Input, Modal, Page, RatingStars, Select, Tag, Textarea } from '../components/ds'
+import { IconBack } from '../components/ds/icons'
+
+const TERMINAL_STATES = ['SesionCancelada', 'Cancelado']
 
 export default function TutorProfile({ user }) {
   const { id } = useParams()
   const nav = useNavigate()
   const [tutor, setTutor] = useState(null)
   const [date, setDate] = useState('')
+  const [subject, setSubject] = useState('')
   const [comment, setComment] = useState('')
   const [stars, setStars] = useState(5)
-  const [bookingMsg, setBookingMsg] = useState('')
-  const [reviewMsg, setReviewMsg] = useState('')
+  const [bookingMsg, setBookingMsg] = useState(null)
+  const [reviewMsg, setReviewMsg] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [editingReviewId, setEditingReviewId] = useState(null)
+  const [editComment, setEditComment] = useState('')
+  const [editStars, setEditStars] = useState(5)
+  const [deleteReviewId, setDeleteReviewId] = useState(null)
 
   useEffect(() => {
     setLoading(true)
     getTutorById(id)
-      .then(setTutor)
+      .then(t => {
+        setTutor(t)
+        const subs = t?.materias ? t.materias.map(m => m.descripcion || m) : (t?.subjects || [])
+        setSubject(subs[0] || '')
+      })
       .finally(() => setLoading(false))
   }, [id])
 
   async function onBook() {
     if (!user) return nav('/login')
-    if (!date) { setBookingMsg('Seleccioná una fecha y hora.'); return }
+    if (!date) { setBookingMsg({ tone: 'danger', text: 'Seleccioná una fecha y hora.' }); return }
+    if (new Date(date).getTime() < Date.now()) {
+      setBookingMsg({ tone: 'danger', text: 'No podés reservar una sesión en una fecha u horario anterior al actual.' })
+      return
+    }
     try {
-      await createBooking({ tutorId: Number(id) || id, userId: user.id, date })
-      setBookingMsg('✓ Reserva creada exitosamente.')
+      const isTutorUser = user.role === 'tutor'
+      const existing = await getBookingsForUser(user.id, isTutorUser)
+      const targetTime = new Date(date).getTime()
+      const hasConflict = existing.some(s => {
+        const estado = s.estado || s.status
+        if (TERMINAL_STATES.includes(estado)) return false
+        const sTime = new Date(s.fechaInicio).getTime()
+        return sTime === targetTime
+      })
+      if (hasConflict) {
+        setBookingMsg({ tone: 'danger', text: 'Ya tenés una reserva en ese día y horario.' })
+        return
+      }
+      await createBooking({ tutor, user, date, subject })
+      setBookingMsg({ tone: 'success', text: 'Reserva creada exitosamente.' })
       setTimeout(() => nav('/bookings'), 1200)
     } catch (e) {
-      setBookingMsg('Error al crear la reserva: ' + e.message)
+      setBookingMsg({ tone: 'danger', text: 'Error al crear la reserva: ' + e.message })
     }
   }
 
   async function onReview() {
     if (!user) return nav('/login')
-    if (!comment.trim()) { setReviewMsg('Escribí un comentario.'); return }
+    if (!comment.trim()) { setReviewMsg({ tone: 'danger', text: 'Escribí un comentario.' }); return }
     try {
-      await addReview(id, { userId: user.id, stars: Number(stars), comment })
+      const reviewerName = user.nombre
+        ? `${user.nombre} ${user.apellido || ''}`.trim()
+        : (user.name || user.email || 'Alumno')
+      await addReview(id, { userId: user.id, user: reviewerName, stars: Number(stars), comment })
       setComment('')
-      setReviewMsg('✓ Reseña enviada.')
-      // Recargar tutor para ver la nueva calificación
+      setReviewMsg({ tone: 'success', text: 'Reseña enviada.' })
       const updated = await getTutorById(id)
       setTutor(updated)
     } catch (e) {
-      setReviewMsg('Error al enviar reseña: ' + e.message)
+      setReviewMsg({ tone: 'danger', text: 'Error al enviar reseña: ' + e.message })
     }
   }
 
-  if (loading) return <div style={{ color: 'var(--muted)' }}>Cargando tutor...</div>
-  if (!tutor) return <div style={{ color: '#ff6b6b' }}>Tutor no encontrado.</div>
+  function startEditReview(r) {
+    setEditingReviewId(r.id)
+    setEditComment(r.comment || r.comentario || '')
+    setEditStars(r.stars || r.puntaje || 5)
+  }
+
+  function cancelEditReview() {
+    setEditingReviewId(null)
+  }
+
+  async function saveEditReview(reviewId) {
+    if (!editComment.trim()) return
+    editLocalReview(id, reviewId, { stars: editStars, comment: editComment })
+    setEditingReviewId(null)
+    const updated = await getTutorById(id)
+    setTutor(updated)
+  }
+
+  function onDeleteReview(reviewId) {
+    setDeleteReviewId(reviewId)
+  }
+
+  async function confirmDeleteReview() {
+    const reviewId = deleteReviewId
+    setDeleteReviewId(null)
+    if (!reviewId) return
+    deleteLocalReview(id, reviewId)
+    const updated = await getTutorById(id)
+    setTutor(updated)
+  }
+
+  if (loading) return <Page><p style={{ color: 'var(--text-muted)' }}>Cargando tutor...</p></Page>
+  if (!tutor) return <Page><p style={{ color: 'var(--danger)' }}>Tutor no encontrado.</p></Page>
 
   // Normalizar campos — el backend devuelve nombre/apellido, el mock devuelve name
-  const nombre = tutor.nombre ? `${tutor.nombre} ${tutor.apellido || ''}` : tutor.name
-  const materias = tutor.materias
-    ? tutor.materias.map(m => m.descripcion || m).join(', ')
-    : (tutor.subjects || []).join(', ')
-  const rating = tutor.rating ?? '—'
+  const name = tutor.nombre ? `${tutor.nombre} ${tutor.apellido || ''}`.trim() : tutor.name
+  const subjects = tutor.materias
+    ? tutor.materias.map(m => m.descripcion || m)
+    : (tutor.subjects || [])
+  const rating = tutor.rating ?? 0
   const reviews = tutor.calificaciones || tutor.reviews || []
+  const modality = tutor.ciudadesServicio ? tutor.ciudadesServicio.join(' · ') : tutor.modality
+  const total = tutor.hourlyRate || 0
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
-        <div className="avatar" style={{ width: 72, height: 72, fontSize: 28 }}>
-          {nombre.charAt(0)}
-        </div>
-        <div>
-          <h2 style={{ margin: 0 }}>{nombre}</h2>
-          <span className="rating">{rating}★</span>
-          {tutor.ciudadesServicio && (
-            <span style={{ marginLeft: 8, color: 'var(--muted)', fontSize: 13 }}>
-              {tutor.ciudadesServicio.join(' · ')}
-            </span>
+    <Page>
+      <Link to="/tutors" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontWeight: 'var(--fw-semibold)', marginBottom: 'var(--space-5)' }}>
+        <IconBack /> Volver a tutores
+      </Link>
+
+      {/* ── Header ──────────────────────────────────────────── */}
+      <Card style={{ marginBottom: 'var(--space-6)' }}>
+        <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <Avatar name={name} size={84} />
+          <div style={{ flex: '1 1 260px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <h2 style={{ fontSize: 'var(--text-2xl)' }}>{name}</h2>
+              {tutor.achievements?.[0] && <Badge tone="gold">{tutor.achievements[0]}</Badge>}
+            </div>
+            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <RatingStars value={rating} showValue />
+              <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>({reviews.length} reseñas)</span>
+              {modality && <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>· {modality}</span>}
+            </div>
+            {tutor.bio && <p style={{ marginTop: 12, color: 'var(--text-body)', lineHeight: 'var(--leading-relaxed)' }}>{tutor.bio}</p>}
+            {subjects.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+                {subjects.map((s, i) => <Tag key={i} tone={i === 0 ? 'brand' : 'neutral'}>{s}</Tag>)}
+              </div>
+            )}
+          </div>
+          {tutor.hourlyRate != null && (
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', fontWeight: 'var(--fw-bold)' }}>${tutor.hourlyRate}</div>
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>por hora</div>
+            </div>
           )}
         </div>
-      </div>
+      </Card>
 
-      {tutor.bio && <p style={{ color: 'var(--muted)' }}>{tutor.bio}</p>}
+      {/* ── Reseñas + Reservar ─────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 'var(--space-6)', alignItems: 'start' }}>
+        <Card>
+          <h3 style={{ fontSize: 'var(--text-xl)', marginBottom: 14 }}>Reseñas ({reviews.length})</h3>
 
-      <p><strong>Materias:</strong> {materias || '—'}</p>
-      {tutor.modality && <p><strong>Modalidad:</strong> {tutor.modality}</p>}
-      {tutor.hourlyRate && <p><strong>Tarifa:</strong> ${tutor.hourlyRate}/h</p>}
+          {reviews.length === 0 && (
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>Todavía no hay reseñas para este tutor.</p>
+          )}
 
-      <hr style={{ borderColor: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {reviews.map((r, i) => {
+              const reviewer = r.user || (r.alumno ? `${r.alumno.nombre} ${r.alumno.apellido}` : 'Alumno')
+              const isOwn = !!user && r.id?.startsWith?.('local-review-') && String(r.userId) === String(user.id)
+              const isEditing = editingReviewId === r.id
 
-      {/* ── Reservar ── */}
-      <h3>Reservar sesión</h3>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <input
-          type="datetime-local"
-          value={date}
-          onChange={e => setDate(e.target.value)}
-          style={{ flex: 1, minWidth: 200 }}
-        />
-        <button onClick={onBook} className="btn btn-primary">Reservar</button>
-      </div>
-      {bookingMsg && (
-        <div style={{
-          marginTop: 8, fontSize: 14, padding: '8px 12px', borderRadius: 8,
-          background: bookingMsg.startsWith('✓') ? 'rgba(100,220,100,0.08)' : 'rgba(255,107,107,0.08)',
-          color: bookingMsg.startsWith('✓') ? '#6ddc6d' : '#ff6b6b'
-        }}>
-          {bookingMsg}
-        </div>
-      )}
-
-      <hr style={{ borderColor: 'rgba(255,255,255,0.05)', margin: '20px 0' }} />
-
-      {/* ── Reseñas ── */}
-      <h3>Reseñas ({reviews.length})</h3>
-      {reviews.length === 0 && (
-        <p style={{ color: 'var(--muted)' }}>Todavía no hay reseñas para este tutor.</p>
-      )}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {reviews.map((r, i) => (
-          <div key={r.id || i} style={{
-            padding: '12px 14px', borderRadius: 10,
-            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <strong>{r.user || (r.alumno ? `${r.alumno.nombre} ${r.alumno.apellido}` : 'Alumno')}</strong>
-              <span style={{ color: '#ffd28a' }}>{r.stars || r.puntaje}★</span>
-            </div>
-            <div style={{ marginTop: 4, color: 'var(--muted)', fontSize: 14 }}>
-              {r.comment || r.comentario}
-            </div>
+              return (
+                <div key={r.id || i} style={{ display: 'flex', gap: 12, paddingBottom: 14, borderBottom: i < reviews.length - 1 ? '1px solid var(--divider)' : 'none' }}>
+                  <Avatar name={reviewer} size={36} shape="circle" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                      <strong style={{ fontSize: 'var(--text-sm)' }}>{reviewer}</strong>
+                      {isEditing
+                        ? <RatingStars value={editStars} onChange={setEditStars} size={14} />
+                        : <RatingStars value={r.stars || r.puntaje || 0} size={14} />}
+                    </div>
+                    {isEditing ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
+                        <Textarea value={editComment} onChange={e => setEditComment(e.target.value)} rows={2} />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <Button size="sm" onClick={() => saveEditReview(r.id)}>Guardar</Button>
+                          <Button size="sm" variant="secondary" onClick={cancelEditReview}>Cancelar</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ marginTop: 4, color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>{r.comment || r.comentario}</p>
+                    )}
+                    {isOwn && !isEditing && (
+                      <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                        <button onClick={() => startEditReview(r)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--brand)', fontSize: 'var(--text-xs)', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}>Editar</button>
+                        <button onClick={() => onDeleteReview(r.id)} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--danger)', fontSize: 'var(--text-xs)', fontWeight: 'var(--fw-semibold)', cursor: 'pointer' }}>Eliminar</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        ))}
-      </div>
 
-      <h4 style={{ marginTop: 20 }}>Dejar una reseña</h4>
-      {!user && (
-        <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-          <a href="/login" style={{ color: 'var(--accent-2)' }}>Iniciá sesión</a> para dejar una reseña.
-        </p>
-      )}
-      {user && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <select value={stars} onChange={e => setStars(e.target.value)} style={{ width: 160 }}>
-            {[5, 4, 3, 2, 1].map(n => (
-              <option key={n} value={n}>{n} estrella{n !== 1 ? 's' : ''}</option>
-            ))}
-          </select>
-          <textarea
-            placeholder="Contá tu experiencia con este tutor..."
-            value={comment}
-            onChange={e => setComment(e.target.value)}
-            rows={3}
-            style={{ resize: 'vertical' }}
+          <h4 style={{ marginTop: 'var(--space-6)', marginBottom: 10, fontSize: 'var(--text-base)' }}>Dejá tu reseña</h4>
+          {!user && (
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
+              <Link to="/login">Iniciá sesión</Link> para dejar una reseña.
+            </p>
+          )}
+          {user && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <RatingStars value={stars} onChange={setStars} size={22} />
+              <Textarea
+                placeholder="Contá tu experiencia con este tutor..."
+                value={comment}
+                onChange={e => setComment(e.target.value)}
+                rows={3}
+              />
+              <div>
+                <Button onClick={onReview}>Enviar reseña</Button>
+              </div>
+              {reviewMsg && <Alert tone={reviewMsg.tone}>{reviewMsg.text}</Alert>}
+            </div>
+          )}
+        </Card>
+
+        <Card style={{ position: 'sticky', top: 'calc(var(--nav-height) + 16px)' }}>
+          <h3 style={{ fontSize: 'var(--text-xl)', marginBottom: 14 }}>Reservar sesión</h3>
+          {subjects.length > 0 && (
+            <Select
+              label="Materia"
+              value={subject}
+              onChange={e => setSubject(e.target.value)}
+              options={subjects.map(s => ({ value: s, label: s }))}
+              style={{ marginBottom: 14 }}
+            />
+          )}
+          <Input
+            label="Fecha y hora"
+            type="datetime-local"
+            value={date}
+            onChange={e => setDate(e.target.value)}
           />
-          <div>
-            <button onClick={onReview} className="btn btn-primary">Enviar reseña</button>
-          </div>
-          {reviewMsg && (
-            <div style={{
-              fontSize: 14, padding: '8px 12px', borderRadius: 8,
-              background: reviewMsg.startsWith('✓') ? 'rgba(100,220,100,0.08)' : 'rgba(255,107,107,0.08)',
-              color: reviewMsg.startsWith('✓') ? '#6ddc6d' : '#ff6b6b'
-            }}>
-              {reviewMsg}
+          {tutor.hourlyRate != null && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--divider)' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Total estimado</span>
+              <strong style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)' }}>${total}</strong>
             </div>
           )}
-        </div>
-      )}
-    </div>
+          <Button fullWidth onClick={onBook} style={{ marginTop: 16 }}>Reservar sesión</Button>
+          {bookingMsg && <Alert tone={bookingMsg.tone} style={{ marginTop: 12 }}>{bookingMsg.text}</Alert>}
+        </Card>
+      </div>
+
+      <Modal
+        open={deleteReviewId != null}
+        title="¿Eliminar esta reseña?"
+        onClose={() => setDeleteReviewId(null)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteReviewId(null)}>Volver</Button>
+            <Button variant="danger" onClick={confirmDeleteReview}>Eliminar reseña</Button>
+          </>
+        }
+      >
+        Esta acción eliminará tu reseña de forma permanente.
+      </Modal>
+    </Page>
   )
 }

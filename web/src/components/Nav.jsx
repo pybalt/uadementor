@@ -7,7 +7,14 @@ export default function Nav({ user }) {
   function navLink(to, label) {
     const active = pathname === to
     return (
-      <Link to={to} style={{ color: active ? 'var(--accent)' : 'var(--muted)', fontWeight: active ? 700 : 400 }}>
+      <Link
+        to={to}
+        style={{
+          color: active ? 'var(--brand)' : 'var(--muted)',
+          background: active ? 'var(--brand-subtle)' : 'transparent',
+          fontWeight: active ? 700 : 600,
+        }}
+      >
         {label}
       </Link>
     )
