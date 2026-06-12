@@ -38,8 +38,8 @@ export function loadUser() {
 
 // ── Base fetch con JWT ───────────────────────────────────────────────────────
 
-async function apiFetch(path, opts = {}) {
-  const token = getToken()
+async function apiFetch(path, { skipAuth = false, ...opts } = {}) {
+  const token = skipAuth ? null : getToken()
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -53,7 +53,9 @@ async function apiFetch(path, opts = {}) {
   }
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText)
-    throw new Error(`${res.status} ${text}`)
+    const err = new Error(`${res.status} ${text}`)
+    err.status = res.status
+    throw err
   }
   // 204 No Content
   if (res.status === 204) return null
@@ -70,6 +72,7 @@ async function apiFetch(path, opts = {}) {
 export async function login(email, password) {
   const data = await apiFetch('/api/v1/auth/authenticate', {
     method: 'POST',
+    skipAuth: true,
     body: JSON.stringify({ email, password }),
   })
   const token = data.access_token || data.accessToken
@@ -92,8 +95,12 @@ export async function login(email, password) {
  * Registro real contra /api/v1/auth/register
  */
 export async function register({ nombre, apellido, dni, email, pass, telefono, role }) {
+  // Limpia cualquier token/usuario de una sesión anterior antes de registrar,
+  // para que la request no quede asociada a una sesión previa.
+  removeToken()
   const data = await apiFetch('/api/v1/auth/register', {
     method: 'POST',
+    skipAuth: true,
     body: JSON.stringify({ nombre, apellido, dni, email, pass, telefono, role }),
   })
   const token = data.access_token || data.accessToken

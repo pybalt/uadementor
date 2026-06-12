@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { logout, getSesionesByAlumno } from '../services/api'
+import { logout } from '../services/api'
 import { getBookingsForUser } from '../services/mockApi'
 import { AchievementBadge, Avatar, Badge, Button, Card, Page, SectionTitle, StatCard } from '../components/ds'
 
@@ -10,9 +10,7 @@ export default function Profile({ user, onLogout }) {
 
   useEffect(() => {
     if (!user?.id) return
-    getSesionesByAlumno(user.id)
-      .then(setSesiones)
-      .catch(() => getBookingsForUser(user.id).then(setSesiones))
+    getBookingsForUser(user.id, user.role === 'tutor').then(setSesiones)
   }, [user])
 
   function handleLogout() {
@@ -62,6 +60,7 @@ export default function Profile({ user, onLogout }) {
             <AchievementBadge label="Primera Reserva" icon="spark" locked={sesiones.length < 1} />
             <AchievementBadge label="Alumno Comprometido" icon="medal" locked={completadas < 1} />
             <AchievementBadge label="Alumno Dedicado" icon="trophy" locked={completadas < 3} />
+            <AchievementBadge label="5 sesiones" icon="star" locked={completadas < 5} />
           </div>
         </>
       )}

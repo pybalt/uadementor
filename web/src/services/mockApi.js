@@ -179,11 +179,49 @@ export async function createBooking({ tutor, user, date, subject }) {
   }
 }
 
+// Estados que se consideran "finales" (ya no son una reserva activa).
+const TERMINAL_STATES = ['SesionCancelada', 'Cancelado', 'Concretado']
+
+/**
+ * Si una sesión sigue "activa" (Reservado/Aceptado) pero su fecha/hora ya
+ * pasó, la marca como `Concretado` para que se mueva al historial. Devuelve
+ * `true` si la sesión fue modificada.
+ */
+function markExpiredAsCompleted(session) {
+  const estado = session.estado || session.status
+  if (TERMINAL_STATES.includes(estado)) return false
+  const time = new Date(session.fechaInicio).getTime()
+  if (Number.isNaN(time) || time >= Date.now()) return false
+  session.estado = 'Concretado'
+  return true
+}
+
+/** Normaliza las sesiones locales: las activas con fecha pasada pasan a `Concretado`. */
+function normalizeLocalSessions() {
+  let changed = false
+  for (const s of mockSessions) {
+    if (markExpiredAsCompleted(s)) changed = true
+  }
+  if (changed) saveMockSessions()
+}
+
+/** Devuelve una copia de la lista con las sesiones activas vencidas marcadas como `Concretado`. */
+function normalizeExpiredSessions(list) {
+  return list.map(s => {
+    const copy = { ...s }
+    markExpiredAsCompleted(copy)
+    return copy
+  })
+}
+
 /**
  * Lista las reservas/sesiones de un usuario. `isTutor` determina si se busca
  * por `tutorId` o `alumnoId`. Combina el resultado del backend con las
  * reservas creadas localmente (`mockSessions`), ya que las reservas a
  * tutores del catálogo mock siempre se guardan localmente.
+ *
+ * Las sesiones activas (Reservado/Aceptado) cuya fecha ya pasó se normalizan
+ * automáticamente a `Concretado`, para que se muevan al historial.
  */
 export async function getBookingsForUser(userId, isTutor = false) {
   let backendList = []
@@ -195,10 +233,12 @@ export async function getBookingsForUser(userId, isTutor = false) {
     backendList = []
   }
 
+  normalizeLocalSessions()
+
   const key = isTutor ? 'tutor' : 'alumno'
   const localList = mockSessions.filter(s => s[key] && String(s[key].id) === String(userId))
 
-  return [...localList, ...backendList]
+  return [...localList, ...normalizeExpiredSessions(backendList)]
 }
 
 /** Cancela localmente una reserva creada en `mockSessions` (id `local-...`). */
@@ -209,6 +249,17 @@ export function cancelLocalSession(id) {
     saveMockSessions()
   }
   return session
+}
+
+/** Elimina permanentemente una reserva local creada en `mockSessions` (id `local-...`). */
+export function deleteLocalSession(id) {
+  const idx = mockSessions.findIndex(s => s.id === id)
+  if (idx >= 0) {
+    mockSessions.splice(idx, 1)
+    saveMockSessions()
+    return true
+  }
+  return false
 }
 
 export async function loginMock(email) {
