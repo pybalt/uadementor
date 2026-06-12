@@ -5,7 +5,7 @@ import {
   aceptarSesion,
   concretarSesion,
 } from '../services/api'
-import { getBookingsForUser, cancelLocalSession } from '../services/mockApi'
+import { getBookingsForUser, cancelLocalSession, deleteLocalSession } from '../services/mockApi'
 import { Alert, Avatar, Badge, Button, Card, Modal, Page, SectionTitle, StatusPill, Tabs } from '../components/ds'
 import { IconCalendar } from '../components/ds/icons'
 
@@ -32,6 +32,7 @@ export default function Bookings({ user }) {
   const [msg, setMsg] = useState(null)
   const [tab, setTab] = useState('todas')
   const [cancelTarget, setCancelTarget] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   const isTutor = user && user.role === 'tutor'
 
@@ -62,6 +63,21 @@ export default function Bookings({ user }) {
     } catch (e) {
       setMsg({ tone: 'danger', text: 'Error al cancelar: ' + e.message })
     }
+  }
+
+  function onEliminar(id) {
+    setDeleteTarget(id)
+  }
+
+  function confirmEliminar() {
+    const id = deleteTarget
+    setDeleteTarget(null)
+    if (id == null) return
+    if (String(id).startsWith('local-')) {
+      deleteLocalSession(id)
+    }
+    setList(l => l.filter(s => s.id !== id))
+    setMsg({ tone: 'success', text: 'Reserva eliminada del historial.' })
   }
 
   async function onAceptar(id) {
@@ -147,6 +163,7 @@ export default function Bookings({ user }) {
           const cancelable = !TERMINAL.includes(estado)
           const aceptable = isTutor && estado === 'Reservado'
           const concretable = isTutor && estado === 'Aceptado'
+          const deletable = TERMINAL.includes(estado)
 
           return (
             <Card key={s.id || i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
@@ -181,6 +198,7 @@ export default function Bookings({ user }) {
                 {aceptable && <Button size="sm" variant="subtle" onClick={() => onAceptar(s.id)}>Aceptar</Button>}
                 {concretable && <Button size="sm" onClick={() => onConcretar(s.id)}>Concretar</Button>}
                 {cancelable && <Button size="sm" variant="danger" onClick={() => onCancelar(s.id)}>{isTutor ? 'Rechazar' : 'Cancelar'}</Button>}
+                {deletable && <Button size="sm" variant="secondary" onClick={() => onEliminar(s.id)}>Eliminar</Button>}
               </div>
             </Card>
           )
@@ -199,6 +217,20 @@ export default function Bookings({ user }) {
         }
       >
         Esta acción moverá la reserva al historial como cancelada.
+      </Modal>
+
+      <Modal
+        open={deleteTarget != null}
+        title="¿Eliminar esta reserva?"
+        onClose={() => setDeleteTarget(null)}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)}>Volver</Button>
+            <Button variant="danger" onClick={confirmEliminar}>Eliminar</Button>
+          </>
+        }
+      >
+        Esta acción eliminará la reserva de tu historial de forma permanente.
       </Modal>
     </Page>
   )

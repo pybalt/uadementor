@@ -150,6 +150,10 @@ export default function Tutors() {
         />
       </div>
 
+      <p style={{ marginBottom: 'var(--space-5)', color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>
+        {filtered.length} {filtered.length === 1 ? 'tutor disponible' : 'tutores disponibles'}
+      </p>
+
       {activeFilters.length > 0 && (
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 'var(--space-5)' }}>
           {activeFilters.map(f => (

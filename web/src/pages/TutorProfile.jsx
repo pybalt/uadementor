@@ -43,17 +43,35 @@ export default function TutorProfile({ user }) {
     try {
       const isTutorUser = user.role === 'tutor'
       const existing = await getBookingsForUser(user.id, isTutorUser)
-      const targetTime = new Date(date).getTime()
-      const hasConflict = existing.some(s => {
+      const targetDate = new Date(date)
+      const targetTime = targetDate.getTime()
+
+      // Sesiones del mismo día (excluyendo las canceladas).
+      const sameDaySessions = existing.filter(s => {
         const estado = s.estado || s.status
         if (TERMINAL_STATES.includes(estado)) return false
-        const sTime = new Date(s.fechaInicio).getTime()
-        return sTime === targetTime
+        return new Date(s.fechaInicio).toDateString() === targetDate.toDateString()
       })
+
+      const hasConflict = sameDaySessions.some(s => new Date(s.fechaInicio).getTime() === targetTime)
       if (hasConflict) {
         setBookingMsg({ tone: 'danger', text: 'Ya tenés una reserva en ese día y horario.' })
         return
       }
+
+      const MIN_GAP_MS = 3 * 60 * 60 * 1000
+      const tooClose = sameDaySessions.some(s => Math.abs(new Date(s.fechaInicio).getTime() - targetTime) < MIN_GAP_MS)
+      if (tooClose) {
+        setBookingMsg({ tone: 'danger', text: 'Ya tenés una reserva muy cerca de ese horario. Elegí otro horario con al menos 3 horas de diferencia.' })
+        return
+      }
+
+      const MAX_BOOKINGS_PER_DAY = 3
+      if (sameDaySessions.length >= MAX_BOOKINGS_PER_DAY) {
+        setBookingMsg({ tone: 'danger', text: 'Alcanzaste el máximo de 3 reservas para ese día.' })
+        return
+      }
+
       await createBooking({ tutor, user, date, subject })
       setBookingMsg({ tone: 'success', text: 'Reserva creada exitosamente.' })
       setTimeout(() => nav('/bookings'), 1200)

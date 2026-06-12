@@ -64,16 +64,25 @@ export default function Register({ onLogin }) {
 
     setLoading(true)
     try {
-      const user = await register({
-        ...form,
+      const payload = {
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
         dni: parseInt(form.dni, 10),
+        email: form.email.trim(),
+        pass: form.pass,
         telefono: parseInt(form.telefono, 10),
-      })
+        role: form.role,
+      }
+      const user = await register(payload)
       setSuccess('Cuenta creada correctamente. Redirigiendo...')
       onLogin(user)
       setTimeout(() => nav('/'), 900)
     } catch (err) {
-      setSubmitError(err.message || 'Error al registrarse. Verificá los datos.')
+      if (err.status === 400) {
+        setSubmitError('No se pudo crear la cuenta. Revisá los datos o probá con otro email.')
+      } else {
+        setSubmitError('No se pudo crear la cuenta. Intentá nuevamente más tarde.')
+      }
     } finally {
       setLoading(false)
     }
